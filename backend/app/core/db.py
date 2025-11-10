@@ -1,7 +1,7 @@
 from typing import AsyncGenerator
 
-from app.core.config import settings
-from app.core.logging import get_logger
+from backend.app.core.config import settings
+from backend.app.core.logging import get_logger
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 from sqlmodel.ext.asyncio.session import AsyncSession
 
@@ -10,6 +10,7 @@ logger = get_logger()
 engine = create_async_engine(settings.DATABASE_URL)
 
 async_session = async_sessionmaker(engine, expire_on_commit=False, class_=AsyncSession)
+
 
 async def get_session() -> AsyncGenerator[AsyncSession, None]:
     async with async_session() as session:
@@ -21,6 +22,7 @@ async def get_session() -> AsyncGenerator[AsyncSession, None]:
             raise
         finally:
             await session.close()
+
 
 async def init_db() -> None:
     pass
