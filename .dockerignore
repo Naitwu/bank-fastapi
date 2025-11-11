@@ -4,6 +4,9 @@
   .gitignore
   .gitattributes
 
+  # Claude Code
+  .claude/
+
   # Python
   *.pyc
   *.pyo
@@ -40,6 +43,9 @@
   *.log
   logs/
   backend/app/logs/
+
+  # Celery
+  backend/app/celerybeat/
 
   # Environment variables
   .env

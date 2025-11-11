@@ -1,17 +1,4 @@
 services:
-  traefik:
-    image: docker.io/traefik:v3.2
-    restart: unless-stopped
-    ports:
-      - "80:80"
-      - "8080:8080"
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-      - ./backend/docker/local/traefik/traefik.yml:/etc/traefik/traefik.yml
-    networks:
-      - bank_local_nw
-    command:
-      - --providers.docker
   api: &api
     build:
       context: .
@@ -28,6 +15,8 @@ services:
     depends_on:
       - postgres
       - mailpit
+      - redis
+      - rabbitmq
     command: /start.sh
     labels:
       - "traefik.enable=true"
@@ -35,6 +24,19 @@ services:
       - "traefik.http.routers.api.entrypoints=web"
       - "traefik.http.routers.api.service=api-service"
       - "traefik.http.services.api-service.loadbalancer.server.port=8000"
+  traefik:
+    image: docker.io/traefik:v3.2
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "8080:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./backend/docker/local/traefik/traefik.yml:/etc/traefik/traefik.yml
+    networks:
+      - bank_local_nw
+    command:
+      - --providers.docker
   mailpit:
     image: docker.io/axllent/mailpit:v1.20.3
     ports:
@@ -61,6 +63,55 @@ services:
       - ./.envs/.env.local
     networks:
       - bank_local_nw
+  redis:
+    image: docker.io/redis:7.0-alpine
+    command: redis-server --appendonly yes
+    networks:
+      - bank_local_nw
+  rabbitmq:
+    image: docker.io/rabbitmq:3.13-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - bank_rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - bank_local_nw
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.rabbitmq.rule=Host(`rabbitmq.localhost`)"
+      - "traefik.http.routers.rabbitmq.entrypoints=web"
+      - "traefik.http.routers.rabbitmq.service=rabbitmq-service"
+      - "traefik.http.services.rabbitmq-service.loadbalancer.server.port=15672"
+  celeryworker:
+    <<: *api
+    ports: []
+    command: /start-celeryworker.sh
+  flower:
+    <<: *api
+    ports:
+      - "5555:5555"
+    volumes:
+      - bank_flower_data:/data
+    command: /start-flower.sh
+    depends_on:
+      - redis
+      - rabbitmq
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.flower.rule=Host(`flower.localhost`)"
+      - "traefik.http.routers.flower.entrypoints=web"
+      - "traefik.http.routers.flower.service=flower-service"
+      - "traefik.http.services.flower-service.loadbalancer.server.port=5555"
+  celerybeat:
+    <<: *api
+    ports: []
+    volumes:
+      - .:/src
+      - ./backend/app/logs:/src/backend/app/logs
+      - bank_celerybeat_data:/src/backend/app/celerybeat
+    command: /start-celerybeat.sh
+
 
 networks:
   bank_local_nw:
@@ -69,3 +120,7 @@ networks:
 volumes:
   bank_local_db:
   bank_mailpit_data:
+  bank_rabbitmq_data:
+  bank_flower_data:
+  bank_celerybeat_data:
+

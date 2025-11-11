@@ -36,8 +36,9 @@ RUN groupadd -r ${APP_GROUP} && \
     useradd -r -g ${APP_GROUP} -d ${APP_HOME} -m ${APP_USER}
 
 RUN mkdir -p ${APP_HOME}/backend/app/logs && \
-    chown -R ${APP_USER}:${APP_GROUP} ${APP_HOME}/backend/app/logs && \
-    chmod 775 ${APP_HOME}/backend/app/logs
+    mkdir -p ${APP_HOME}/backend/app/celerybeat && \
+    chown -R ${APP_USER}:${APP_GROUP} ${APP_HOME}/backend/app/logs ${APP_HOME}/backend/app/celerybeat && \
+    chmod 775 ${APP_HOME}/backend/app/logs ${APP_HOME}/backend/app/celerybeat
 
 COPY --from=python-build-Stage /usr/src/app/wheels /wheels/
 
@@ -46,9 +47,12 @@ RUN pip install --no-cache-dir --no-index --find-links=/wheels/ /wheels/* \
 
 COPY --chown=${APP_USER}:${APP_GROUP} ./backend/docker/local/fastapi/start.sh /start.sh
 COPY --chown=${APP_USER}:${APP_GROUP} ./backend/docker/local/fastapi/entrypoint.sh /entrypoint.sh
+COPY --chown=${APP_USER}:${APP_GROUP} ./backend/docker/local/fastapi/celery/worker/start.sh /start-celeryworker.sh
+COPY --chown=${APP_USER}:${APP_GROUP} ./backend/docker/local/fastapi/celery/beat/start.sh /start-celerybeat.sh
+COPY --chown=${APP_USER}:${APP_GROUP} ./backend/docker/local/fastapi/celery/flower/start.sh /start-flower.sh
 
-RUN sed -i 's/\r$//g' /start.sh /entrypoint.sh && \
-    chmod +x /start.sh /entrypoint.sh
+RUN sed -i 's/\r$//g' /start.sh /entrypoint.sh /start-celeryworker.sh /start-celerybeat.sh /start-flower.sh && \
+    chmod +x /start.sh /entrypoint.sh /start-celeryworker.sh /start-celerybeat.sh /start-flower.sh
 
 COPY --chown=${APP_USER}:${APP_GROUP} . ${APP_HOME}
 

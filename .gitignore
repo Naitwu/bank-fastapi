@@ -4,6 +4,9 @@
 .envs/*
 !.envs/.env.example
 
+# Claude Code
+.claude/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
@@ -136,6 +139,7 @@ __pypackages__/
 # Celery stuff
 celerybeat-schedule
 celerybeat.pid
+backend/app/celerybeat/
 
 # Redis
 *.rdb
