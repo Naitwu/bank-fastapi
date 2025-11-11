@@ -22,6 +22,8 @@ FROM python AS python-run-stage
 ARG APP_HOME=/src
 ARG APP_USER=fastapi
 ARG APP_GROUP=fastapi
+ARG USER_UID=1000
+ARG USER_GID=1000
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1
@@ -32,8 +34,8 @@ RUN apt-get update && apt-get install \
     && apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false \
     && rm -rf /var/lib/apt/lists/*
 
-RUN groupadd -r ${APP_GROUP} && \
-    useradd -r -g ${APP_GROUP} -d ${APP_HOME} -m ${APP_USER}
+RUN groupadd -g ${USER_GID} ${APP_GROUP} && \
+    useradd -u ${USER_UID} -g ${APP_GROUP} -d ${APP_HOME} -m ${APP_USER}
 
 RUN mkdir -p ${APP_HOME}/backend/app/logs && \
     mkdir -p ${APP_HOME}/backend/app/celerybeat && \
