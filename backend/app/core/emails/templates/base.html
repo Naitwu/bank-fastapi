@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{% endblock %}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+        }
+
+        .container {
+            width: 60%;
+            margin: auto;
+            overflow: hidden;
+            padding: 20px;
+            background: #fff;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .header {
+            text-align: center;
+            padding: 20px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .content {
+            padding: 20px 0;
+        }
+
+        .footer{
+            text-align: center;
+            padding: 10px 0;
+            border-top: 1px solid #eee;
+            font-size: 0.8em;
+            color: #777;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>{% block header %}{% endblock %}</h1>
+        </div>
+        <div class="content">
+            {% block content %}{% endblock %}
+        </div>
+        <div class="footer">
+            {% block footer %}
+            <p>如有其他疑問或想與我們聯絡，請聯繫我們的客服團隊 <a href="mailto:{{ support_email }}">{{ support_email }}</a></p>
+            <p>&copy; 2025 {{ site_name|default('Bank FastAPI') }}. All rights reserved.</p>
+            {% endblock %}
+        </div>
+    </div>
+</body>
+</html>

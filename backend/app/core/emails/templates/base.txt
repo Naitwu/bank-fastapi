@@ -1,0 +1,8 @@
+{% block header %}{% endblock %}
+
+{% block content %}{% endblock %}
+
+{% block footer %}
+    如有其他疑問或想與我們聯絡，請聯繫我們的客服團隊 {{ support_email }}
+    © 2025 {{ site_name }}. All rights reserved.
+{% endblock %}

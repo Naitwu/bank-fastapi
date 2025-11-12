@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block title %}登入驗證碼通知{% endblock %}
+
+{% block header %}登入驗證碼{% endblock %}
+
+{% block content %}
+<div style="padding: 20px 0;">
+    <p style="font-size: 16px; color: #333; margin-bottom: 20px;">您好，</p>
+
+    <p style="font-size: 16px; color: #333; margin-bottom: 20px;">
+        我們收到了您的登入請求。為確保您的帳戶安全，請使用以下一次性驗證碼完成登入程序：
+    </p>
+
+    <div style="background-color: #f8f9fa; border-left: 4px solid #007bff; padding: 20px; margin: 30px 0; text-align: center;">
+        <p style="font-size: 14px; color: #666; margin: 0 0 10px 0; text-transform: uppercase; letter-spacing: 1px;">您的驗證碼</p>
+        <p style="font-size: 36px; font-weight: bold; color: #007bff; margin: 0; letter-spacing: 8px; font-family: 'Courier New', monospace;">{{ otp }}</p>
+    </div>
+
+    <div style="background-color: #fff3cd; border: 1px solid #ffc107; border-radius: 4px; padding: 15px; margin: 20px 0;">
+        <p style="font-size: 14px; color: #856404; margin: 0;">
+            <strong style="display: inline-block; margin-right: 5px;">⚠️ 重要提醒：</strong>
+            此驗證碼將於 <strong>{{ expiry_time }}</strong> 後失效，請儘速完成驗證。
+        </p>
+    </div>
+
+    <div style="margin-top: 30px; padding: 20px; background-color: #f8f9fa; border-radius: 4px;">
+        <p style="font-size: 15px; color: #333; margin: 0 0 10px 0; font-weight: bold;">安全提醒：</p>
+        <ul style="font-size: 14px; color: #666; margin: 0; padding-left: 20px; line-height: 1.8;">
+            <li>請勿將此驗證碼轉發或告知他人</li>
+            <li>本行客服人員絕不會向您索取驗證碼</li>
+            <li>若非您本人操作，請立即聯繫客服中心</li>
+            <li>驗證碼僅供單次使用，使用後即失效</li>
+        </ul>
+    </div>
+
+    <p style="font-size: 14px; color: #666; margin-top: 30px; line-height: 1.6;">
+        若您未曾嘗試登入，請忽略此郵件或立即聯繫我們的客服團隊，以確保您的帳戶安全。
+    </p>
+
+    <p style="font-size: 14px; color: #333; margin-top: 20px;">
+        感謝您的配合，<br>
+        {{ site_name|default('Bank FastAPI') }} 敬上
+    </p>
+</div>
+{% endblock %}
