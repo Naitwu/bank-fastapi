@@ -108,7 +108,7 @@ src/
 │   │   ├── db.py                  # 資料庫連接池和 session 管理
 │   │   ├── model_registry.py     # 自動發現和載入 models
 │   │   ├── health.py              # 健康檢查系統（database, redis, celery）
-│   │   ├── celery_app.py          # Celery 配置和任務佇列
+│   │   ├── celery_app.py          # Celery .3+062配置和任務佇列
 │   │   └── emails/                # 郵件系統
 │   │       ├── config.py          # FastAPI-Mail 配置
 │   │       ├── base.py            # 郵件發送基礎類別

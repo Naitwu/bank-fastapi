@@ -1,5 +1,8 @@
 import random
 import string
+import uuid
+import jwt
+from datetime import datetime, timedelta, timezone
 from backend.app.core.config import settings
 from argon2 import PasswordHasher
 from argon2.exceptions import VerifyMismatchError
@@ -22,6 +25,7 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
         return False
 
 def generate_username() -> str:
+    """Generate a unique username based on the site name and random characters."""
     bank_name = settings.SITE_NAME
     words = bank_name.split()
     prefix = "".join([word[0] for word in words]).upper()
@@ -29,3 +33,15 @@ def generate_username() -> str:
     random_string = ''.join(random.choices(string.ascii_uppercase + string.digits, k=remaining_length))
     username = f"{prefix}-{random_string}"
     return username
+
+def create_activation_token(id: uuid.UUID) -> str:
+    """Create a JWT activation token for the given user ID."""
+    expire = datetime.now(timezone.utc) + timedelta(minutes=settings.ACTIVATION_TOKEN_EXPIRE_MINUTES)
+    payload = {
+        "id": str(id),
+        "type": "activation",
+        "exp": expire,
+        "iat": datetime.now(timezone.utc)
+    }
+    token = jwt.encode(payload, settings.JWT_SECRET_KEY, algorithm=settings.JWT_ALGORITHM)
+    return token
