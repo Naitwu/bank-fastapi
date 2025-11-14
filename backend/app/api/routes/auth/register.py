@@ -20,7 +20,7 @@ async def register_user(
     session: AsyncSession = Depends(get_session),
 ):
     try:
-        if await user_auth_service.check_user_email_exists(session, user_data.email):
+        if await user_auth_service.check_user_email_exists(user_data.email, session):
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail={
@@ -29,7 +29,7 @@ async def register_user(
                     "action": "Please use a different email address.",
                 },
             )
-        if await user_auth_service.check_user_id_no_exists(session, user_data.id_no):
+        if await user_auth_service.check_user_id_no_exists(user_data.id_no, session):
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail={

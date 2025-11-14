@@ -49,7 +49,7 @@ async def resend_activation_email(
     session: AsyncSession = Depends(get_session),
 ):
     try:
-        user = await user_auth_service.get_user_by_email(session, email_request.email, include_inactive=True)
+        user = await user_auth_service.get_user_by_email(email_request.email, session, include_inactive=True)
         if not user:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,

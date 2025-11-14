@@ -25,8 +25,8 @@ logger = get_logger()
 class UserAuthService:
     async def get_user_by_email(
         self,
-        session: AsyncSession,
         email: str,
+        session: AsyncSession,
         include_inactive: bool = False,
     ) -> User | None:
         statement = select(User).where(User.email == email)
@@ -38,8 +38,8 @@ class UserAuthService:
 
     async def get_user_by_id(
         self,
-        session: AsyncSession,
         user_id: uuid.UUID,
+        session: AsyncSession,
         include_inactive: bool = False,
     ) -> User | None:
         statement = select(User).where(User.id == user_id)
@@ -51,8 +51,8 @@ class UserAuthService:
 
     async def get_user_by_id_no(
         self,
-        session: AsyncSession,
         id_no: int,
+        session: AsyncSession,
         include_inactive: bool = False,
     ) -> User | None:
         statement = select(User).where(User.id_no == id_no)
@@ -62,12 +62,12 @@ class UserAuthService:
         user = result.first()
         return user
 
-    async def check_user_email_exists(self, session: AsyncSession, email: str) -> bool:
-        user = await self.get_user_by_email(session, email)
+    async def check_user_email_exists(self, email: str, session: AsyncSession) -> bool:
+        user = await self.get_user_by_email(email, session)
         return user is not None
 
-    async def check_user_id_no_exists(self, session: AsyncSession, id_no: int) -> bool:
-        user = await self.get_user_by_id_no(session, id_no)
+    async def check_user_id_no_exists(self, id_no: int, session: AsyncSession) -> bool:
+        user = await self.get_user_by_id_no(id_no, session)
         return user is not None
 
     async def verify_user_credentials(
@@ -250,7 +250,7 @@ class UserAuthService:
                 },
             )
 
-        user = await self.get_user_by_id(session, user_id, include_inactive=True)
+        user = await self.get_user_by_id(user_id, session, include_inactive=True)
         if not user:
             raise fastapi.HTTPException(
                 status_code=fastapi.status.HTTP_404_NOT_FOUND,
@@ -287,7 +287,7 @@ class UserAuthService:
         session: AsyncSession,
     ) -> User:
         try:
-            user = await self.get_user_by_email(session, email)
+            user = await self.get_user_by_email(email, session)
             if not user:
                 raise fastapi.HTTPException(
                     status_code=fastapi.status.HTTP_404_NOT_FOUND,
