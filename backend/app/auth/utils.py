@@ -127,3 +127,19 @@ def delete_auth_cookies(response: Response) -> None:
     ]
     for cookie in cookies:
         response.delete_cookie(cookie)
+
+def create_password_reset_token(id: uuid.UUID) -> str:
+    """Create a JWT password reset token for the given user ID."""
+    expire = datetime.now(timezone.utc) + timedelta(
+        minutes=settings.PASSWORD_RESET_TOKEN_EXPIRATION_MINUTES
+    )
+    payload = {
+        "id": str(id),
+        "type": "password_reset",
+        "exp": expire,
+        "iat": datetime.now(timezone.utc),
+    }
+    token = jwt.encode(
+        payload, settings.JWT_SECRET_KEY, algorithm=settings.JWT_ALGORITHM
+    )
+    return token
