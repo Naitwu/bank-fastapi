@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+
+{% block title %}帳號暫時鎖定通知{% endblock %}
+
+{% block header %}帳號安全通知{% endblock %}
+
+{% block content %}
+<p style="font-size: 16px; color: #333;">親愛的 {{ user_name }} 您好，</p>
+
+<p style="font-size: 14px; color: #555; line-height: 1.8;">
+    我們偵測到您的帳號在短時間內發生多次登入失敗的情況。基於安全考量，您的帳號已暫時鎖定。
+</p>
+
+<div style="background-color: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px 20px;
+            margin: 20px 0;
+            border-radius: 4px;">
+    <p style="font-size: 14px; color: #856404; margin: 0; font-weight: bold;">
+        ⚠️ 鎖定資訊
+    </p>
+    <p style="font-size: 13px; color: #856404; margin: 10px 0 0 0; line-height: 1.6;">
+        <strong>鎖定時間：</strong>{{ lockout_time }}<br>
+        <strong>解鎖時間：</strong>{{ unlock_time }}<br>
+        <strong>鎖定時長：</strong>{{ lockout_duration }} 分鐘
+    </p>
+</div>
+
+<p style="font-size: 14px; color: #555; line-height: 1.8;">
+    在鎖定期間，您將無法登入您的帳號。系統將於 <strong style="color: #007bff;">{{ unlock_time }}</strong> 自動解除鎖定。
+</p>
+
+<div style="background-color: #f8d7da;
+            border-left: 4px solid #dc3545;
+            padding: 15px 20px;
+            margin: 25px 0;
+            border-radius: 4px;">
+    <p style="font-size: 14px; color: #721c24; margin: 0; font-weight: bold;">
+        🔒 安全性警告
+    </p>
+    <p style="font-size: 13px; color: #721c24; margin: 10px 0 0 0; line-height: 1.6;">
+        如果這些登入嘗試<strong>不是您本人</strong>所進行，這可能表示有人正試圖未經授權存取您的帳號。請立即採取以下措施：
+    </p>
+    <ul style="font-size: 13px; color: #721c24; margin: 10px 0 0 20px; line-height: 1.8;">
+        <li>聯繫我們的客服團隊回報此問題</li>
+        <li>帳號解鎖後立即變更密碼</li>
+        <li>檢查您的帳號活動記錄</li>
+        <li>確保您的安全問題答案未被洩露</li>
+    </ul>
+</div>
+
+<p style="font-size: 14px; color: #555; line-height: 1.8; margin-top: 25px;">
+    <strong>帳號解鎖後的建議措施：</strong>
+</p>
+
+<ul style="font-size: 14px; color: #555; line-height: 1.8; margin-left: 20px;">
+    <li>立即修改您的登入密碼</li>
+    <li>確保密碼強度足夠（至少 8 個字元，包含大小寫字母、數字及特殊符號）</li>
+    <li>請勿與他人分享您的帳號資訊</li>
+    <li>定期檢視帳號活動記錄</li>
+</ul>
+
+<p style="font-size: 14px; color: #555; line-height: 1.8; margin-top: 25px;">
+    如果您在解鎖後仍遇到登入問題，或需要立即存取您的帳號，請聯繫我們的客服團隊尋求協助。
+</p>
+
+<p style="font-size: 14px;
+          color: #fff;
+          background-color: #007bff;
+          padding: 12px 20px;
+          border-radius: 5px;
+          text-align: center;
+          margin: 25px 0;">
+    客服信箱：<a href="mailto:{{ support_email }}" style="color: #fff; font-weight: bold; text-decoration: underline;">{{ support_email }}</a>
+</p>
+
+<p style="font-size: 13px; color: #999; margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
+    此信件由系統自動寄出，請勿直接回覆。
+</p>
+{% endblock %}

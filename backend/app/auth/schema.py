@@ -83,3 +83,30 @@ class LoginRequestSchema(SQLModel):
 class OTPVerifyRequestSchema(SQLModel):
     email: EmailStr
     otp: str = Field(min_length=6, max_length=6)
+
+class PasswordResetRequestSchema(SQLModel):
+    email: EmailStr
+
+class PasswordResetConfirmSchema(SQLModel):
+    new_password: str = Field(
+        ...,
+        min_length=8,
+        max_length=40,
+    )
+    confirm_password: str = Field(
+        ...,
+        min_length=8,
+        max_length=40,
+    )
+    @field_validator("confirm_password")
+    def validate_confirm_password(cls, v, values):
+        if "new_password" in values.data and v != values.data["new_password"]:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail={
+                    "status": "error",
+                    "message": "New password and confirm password do not match.",
+                    "action": "Please ensure both passwords are identical."
+                }
+            )
+        return v
