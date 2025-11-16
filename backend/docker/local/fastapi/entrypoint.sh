@@ -38,6 +38,8 @@ while True:
     time.sleep(RETRY_INTERVAL)
 END
 
->&2 echo "PostgreSQL is up - executing command"
+echo >&2  'PostgreSQL is up - executing command'
+
+alembic upgrade head
 
 exec "$@"
