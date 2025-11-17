@@ -33,3 +33,5 @@ inspect-network:
 
 psql:
 	docker compose -f local.yml exec -it postgres psql -U bankfastapiuser -d bankfastapidb
+logs:
+	docker compose -f local.yml logs -f api
