@@ -72,6 +72,45 @@ class ProfileCreateSchema(ProfileBaseSchema):
     @field_validator("id_expiry_date")
     def check_id_dates(cls, v, values):
         issue_date = values.data.get("id_issue_date")
-        if issue_date:
+        if issue_date is not None:
             validate_id_dates(issue_date, v)
         return v
+
+
+class ProfileUpdateSchema(ProfileBaseSchema):
+    title: SalutationSchema | None = None
+    gender: GenderSchema | None = None
+    date_of_birth: date | None = None
+    country_of_birth: CountryShortName | None = None
+    place_of_birth: str | None = None
+    marital_status: MaritalStatusSchema | None = None
+    means_of_identification: IdentificationTypeSchema | None = None
+    id_issue_date: date | None = None
+    id_expiry_date: date | None = None
+    passport_number: str | None = None
+    nationality: str | None = None
+    Phone_number: PhoneNumber | None = None
+    address: str | None = None
+    city: str | None = None
+    country: str | None = None
+    employment_status: EmploymentStatusSchema | None = None
+    employer_name: str | None = None
+    employer_address: str | None = None
+    employer_city: str | None = None
+    employer_country: CountryShortName | None = None
+    annual_income: float | None = None
+    date_of_employment: date | None = None
+
+    @field_validator("id_expiry_date")
+    def check_id_dates(cls, v: date | None, values) -> date | None:
+        if v is not None:
+            issue_date = values.data.get("id_issue_date")
+            if issue_date is not None:
+                validate_id_dates(issue_date, v)
+        return v
+
+
+class ImageTypeSchema(str, Enum):
+    ProfilePhoto = "ProfilePhoto"
+    IDPhoto = "IDPhoto"
+    SignaturePhoto = "SignaturePhoto"
