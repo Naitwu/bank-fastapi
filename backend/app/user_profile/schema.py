@@ -111,6 +111,6 @@ class ProfileUpdateSchema(ProfileBaseSchema):
 
 
 class ImageTypeSchema(str, Enum):
-    ProfilePhoto = "ProfilePhoto"
-    IDPhoto = "IDPhoto"
-    SignaturePhoto = "SignaturePhoto"
+    ID_PHOTO = "id_photo"
+    PROFILE_PHOTO = "profile_photo"
+    SIGNATURE_PHOTO = "signature_photo"
