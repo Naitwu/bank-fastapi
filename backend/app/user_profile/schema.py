@@ -5,6 +5,7 @@ from pydantic_extra_types.country import CountryShortName
 from pydantic_extra_types.phone_numbers import PhoneNumber
 from pydantic import field_validator
 from backend.app.user_profile.utils import validate_id_dates
+from backend.app.auth.schema import RoleCoiceSchema
 
 
 class SalutationSchema(str, Enum):
@@ -114,3 +115,15 @@ class ImageTypeSchema(str, Enum):
     ID_PHOTO = "id_photo"
     PROFILE_PHOTO = "profile_photo"
     SIGNATURE_PHOTO = "signature_photo"
+
+class ProfileResponseSchema(SQLModel):
+    username: str
+    first_name: str
+    last_name: str
+    email: str
+    id_no: str
+    role: RoleCoiceSchema
+    profile: ProfileBaseSchema | None
+
+    class Config:
+        from_attributes = True
