@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException, status, Depends, UploadFile, File
 from sqlmodel.ext.asyncio.session import AsyncSession
 from backend.app.core.db import get_session
 from backend.app.core.logging import get_logger
-from backend.app.user_profile.schema import ImageTypeSchema
+from backend.app.user_profile.enums import ImageTypeSchema
 from backend.app.api.routes.auth.deps import CurrentUser
 from backend.app.api.services.profile import initiate_image_upload, update_profile_image_url
 from backend.app.core.utils.image import validate_image
