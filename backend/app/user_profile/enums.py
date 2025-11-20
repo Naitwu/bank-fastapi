@@ -1,32 +1,32 @@
 from enum import Enum
 
 
-class SalutationSchema(str, Enum):
+class SalutationEnum(str, Enum):
     Mr = "Mr"
     Mrs = "Mrs"
     Miss = "Miss"
 
 
-class GenderSchema(str, Enum):
+class GenderEnum(str, Enum):
     Male = "Male"
     Female = "Female"
     Other = "Other"
 
 
-class MaritalStatusSchema(str, Enum):
+class MaritalStatusEnum(str, Enum):
     Single = "Single"
     Married = "Married"
     Divorced = "Divorced"
     Widowed = "Widowed"
 
 
-class IdentificationTypeSchema(str, Enum):
+class IdentificationTypeEnum(str, Enum):
     Passport = "Passport"
     NationalID = "NationalID"
     DriverLicense = "DriverLicense"
 
 
-class EmploymentStatusSchema(str, Enum):
+class EmploymentStatusEnum(str, Enum):
     Employed = "Employed"
     SelfEmployed = "SelfEmployed"
     Unemployed = "Unemployed"
@@ -35,7 +35,7 @@ class EmploymentStatusSchema(str, Enum):
 
 
 
-class ImageTypeSchema(str, Enum):
+class ImageTypeEnum(str, Enum):
     ID_PHOTO = "id_photo"
     PROFILE_PHOTO = "profile_photo"
     SIGNATURE_PHOTO = "signature_photo"
