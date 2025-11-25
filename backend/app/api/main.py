@@ -14,6 +14,7 @@ from backend.app.api.routes.next_of_kin import (
     create as create_next_of_kin,
     update as update_next_of_kin,
     all as all_next_of_kin,
+    delete as delete_next_of_kin,
 )
 
 api_router = APIRouter()
@@ -33,3 +34,4 @@ api_router.include_router(all_profiles.router)
 api_router.include_router(create_next_of_kin.router)
 api_router.include_router(all_next_of_kin.router)
 api_router.include_router(update_next_of_kin.router)
+api_router.include_router(delete_next_of_kin.router)

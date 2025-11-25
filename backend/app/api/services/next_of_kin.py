@@ -223,3 +223,50 @@ async def update_next_of_kin(
                 "message": "An error occurred while updating the next of kin.",
             },
         )
+
+async def delete_next_of_kin(
+    user_id: uuid.UUID,
+    next_of_kin_id: uuid.UUID,
+    session: AsyncSession,
+) -> dict[str, str]:
+    try:
+        total_count = await get_next_of_kin_count(user_id, session)
+        if total_count <= 1:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail={
+                    "status": "error",
+                    "message": "At least one next of kin must be retained.",
+                },
+            )
+        primary_next_of_kin = await get_primary_next_of_kin(user_id, session)
+        if primary_next_of_kin and primary_next_of_kin.id == next_of_kin_id:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail={
+                    "status": "error",
+                    "message": "Cannot delete primary next of kin. Please set another next of kin as primary first.",
+                },
+            )
+        next_of_kin = await get_user_next_of_kin(user_id, next_of_kin_id, session)
+        await session.delete(next_of_kin)
+        await session.commit()
+        logger.info(f"Deleted next of kin {next_of_kin_id} for user_id {user_id}")
+        return {
+            "status": "success",
+            "message": "Next of kin deleted successfully.",
+        }
+    except HTTPException as http_exc:
+        raise http_exc
+    except Exception as e:
+        await session.rollback()
+        logger.error(
+            f"Error deleting next of kin {next_of_kin_id} for user_id {user_id}: {e}"
+        )
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail={
+                "status": "error",
+                "message": "An error occurred while deleting the next of kin.",
+            },
+        )
