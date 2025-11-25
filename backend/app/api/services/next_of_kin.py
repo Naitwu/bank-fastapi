@@ -4,10 +4,11 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 from sqlmodel import select
 
 from backend.app.next_of_kin.models import NextOfKin
-from backend.app.next_of_kin.schema import NextOfKinCreateSchema, NextOfKinReadSchema
+from backend.app.next_of_kin.schema import NextOfKinCreateSchema, NextOfKinReadSchema, NextOfKinUpdateSchema
 from backend.app.core.logging import get_logger
 
 logger = get_logger()
+
 
 async def get_next_of_kin_count(user_id: uuid.UUID, session: AsyncSession) -> int:
     try:
@@ -26,11 +27,12 @@ async def get_next_of_kin_count(user_id: uuid.UUID, session: AsyncSession) -> in
         )
 
 
-async def get_primary_next_of_kin(user_id: uuid.UUID, session: AsyncSession) -> NextOfKin | None:
+async def get_primary_next_of_kin(
+    user_id: uuid.UUID, session: AsyncSession
+) -> NextOfKin | None:
     try:
         statement = select(NextOfKin).where(
-            NextOfKin.user_id == user_id,
-            NextOfKin.is_primary_contact == True
+            NextOfKin.user_id == user_id, NextOfKin.is_primary_contact == True
         )
         result = await session.exec(statement)
         return result.first()
@@ -43,6 +45,7 @@ async def get_primary_next_of_kin(user_id: uuid.UUID, session: AsyncSession) -> 
                 "message": "An error occurred while fetching the primary next of kin.",
             },
         )
+
 
 async def validate_next_of_kin_creation(
     user_id: uuid.UUID,
@@ -69,6 +72,7 @@ async def validate_next_of_kin_creation(
                     "message": "A primary next of kin already exists.",
                 },
             )
+
 
 async def create_next_of_kin(
     user_id: uuid.UUID,
@@ -110,6 +114,7 @@ async def create_next_of_kin(
             },
         )
 
+
 async def get_next_of_kins_by_user(
     user_id: uuid.UUID,
     session: AsyncSession,
@@ -125,5 +130,96 @@ async def get_next_of_kins_by_user(
             detail={
                 "status": "error",
                 "message": "An error occurred while fetching the next of kins.",
+            },
+        )
+
+
+async def get_user_next_of_kin(
+    user_id: uuid.UUID,
+    next_of_kin_id: uuid.UUID,
+    session: AsyncSession,
+) -> NextOfKin:
+    try:
+        statement = select(NextOfKin).where(
+            NextOfKin.user_id == user_id, NextOfKin.id == next_of_kin_id
+        )
+        result = await session.exec(statement)
+        next_of_kin = result.first()
+        if not next_of_kin:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail={
+                    "status": "error",
+                    "message": "Next of kin not found.",
+                },
+            )
+        return next_of_kin
+    except Exception as e:
+        logger.error(
+            f"Error fetching next of kin {next_of_kin_id} for user_id {user_id}: {e}"
+        )
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail={
+                "status": "error",
+                "message": "An error occurred while fetching the next of kin.",
+            },
+        )
+
+async def update_next_of_kin(
+    user_id: uuid.UUID,
+    next_of_kin_id: uuid.UUID,
+    next_of_kin_data: NextOfKinUpdateSchema,
+    session: AsyncSession,
+) -> NextOfKin:
+    try:
+        next_of_kin = await get_user_next_of_kin(user_id, next_of_kin_id, session)
+
+        if next_of_kin_data.is_primary_contact is not None:
+            if next_of_kin_data.is_primary_contact:
+                existing_primary = await get_primary_next_of_kin(user_id, session)
+                if existing_primary and existing_primary.id != next_of_kin_id:
+                    existing_primary.is_primary_contact = False
+                    session.add(existing_primary)
+            else:
+                if next_of_kin.is_primary_contact:
+                    total_count = await get_next_of_kin_count(user_id, session)
+                    if total_count > 1:
+                        raise HTTPException(
+                            status_code=status.HTTP_400_BAD_REQUEST,
+                            detail={
+                                "status": "error",
+                                "message": "Cannot remove primary status. At least one next of kin must be primary. Please set another next of kin as primary first.",
+                            },
+                        )
+                    else:
+                        raise HTTPException(
+                            status_code=status.HTTP_400_BAD_REQUEST,
+                            detail={
+                                "status": "error",
+                                "message": "At least one next of kin must be primary.",
+                            },
+                        )
+
+        for key, value in next_of_kin_data.model_dump(exclude_unset=True).items():
+            setattr(next_of_kin, key, value)
+
+        session.add(next_of_kin)
+        await session.commit()
+        await session.refresh(next_of_kin)
+        logger.info(f"Updated next of kin {next_of_kin_id} for user_id {user_id}")
+        return next_of_kin
+    except HTTPException as http_exc:
+        raise http_exc
+    except Exception as e:
+        await session.rollback()
+        logger.error(
+            f"Error updating next of kin {next_of_kin_id} for user_id {user_id}: {e}"
+        )
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail={
+                "status": "error",
+                "message": "An error occurred while updating the next of kin.",
             },
         )
