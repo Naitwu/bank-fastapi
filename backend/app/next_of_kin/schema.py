@@ -5,6 +5,7 @@ from pydantic_extra_types.country import CountryShortName
 from pydantic_extra_types.phone_numbers import PhoneNumber
 from backend.app.next_of_kin.enums import RelationshipTypeEnum
 
+
 class NextOfKinBaseSchema(SQLModel):
     full_name: str = Field(min_length=2, max_length=100)
     relationship: RelationshipTypeEnum
@@ -18,12 +19,15 @@ class NextOfKinBaseSchema(SQLModel):
     passport_number: str | None = None
     is_primary_contact: bool = Field(default=False)
 
+
 class NextOfKinCreateSchema(NextOfKinBaseSchema):
     pass
+
 
 class NextOfKinReadSchema(NextOfKinBaseSchema):
     id: uuid.UUID
     user_id: uuid.UUID
+
 
 class NextOfKinUpdateSchema(NextOfKinBaseSchema):
     full_name: str | None = None
