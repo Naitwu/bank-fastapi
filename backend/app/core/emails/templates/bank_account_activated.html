@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block title %}銀行帳戶啟用通知{% endblock %}
+
+{% block header %}銀行帳戶已成功啟用{% endblock %}
+
+{% block content %}
+<p>親愛的 {{ full_name }} 您好，</p>
+
+<p>恭喜您！您的銀行帳戶已通過 KYC（客戶身分驗證）審核，現已正式啟用。</p>
+
+<div style="background-color: #f8f9fa; padding: 20px; border-radius: 5px; margin: 20px 0; border-left: 4px solid #28a745;">
+    <h3 style="margin-top: 0; color: #28a745;">帳戶資訊</h3>
+    <table style="width: 100%; border-collapse: collapse;">
+        <tr>
+            <td style="padding: 8px 0; font-weight: bold; width: 30%;">帳戶名稱：</td>
+            <td style="padding: 8px 0;">{{ account_name }}</td>
+        </tr>
+        <tr>
+            <td style="padding: 8px 0; font-weight: bold;">帳戶號碼：</td>
+            <td style="padding: 8px 0;">{{ account_number }}</td>
+        </tr>
+        <tr>
+            <td style="padding: 8px 0; font-weight: bold;">帳戶類型：</td>
+            <td style="padding: 8px 0;">{{ account_type }}</td>
+        </tr>
+        <tr>
+            <td style="padding: 8px 0; font-weight: bold;">幣別：</td>
+            <td style="padding: 8px 0;">{{ currency }}</td>
+        </tr>
+    </table>
+</div>
+
+<p><strong>您現在可以使用以下完整功能：</strong></p>
+
+<ul style="line-height: 1.8;">
+    <li>存款與提款服務</li>
+    <li>帳戶轉帳</li>
+    <li>線上交易</li>
+    <li>帳戶查詢與對帳單下載</li>
+    <li>其他銀行服務</li>
+</ul>
+
+<p style="background-color: #fff3cd; padding: 15px; border-radius: 5px; border-left: 4px solid #ffc107; margin: 20px 0;">
+    <strong>溫馨提醒：</strong>請妥善保管您的帳戶資訊，切勿將帳號、密碼或任何驗證碼透露給他人。本行不會以任何方式要求您提供完整密碼或驗證碼。
+</p>
+
+<p>如需協助或有任何疑問，歡迎隨時聯繫我們的客服團隊。</p>
+
+<p>感謝您選擇我們的服務，我們將竭誠為您提供優質的金融服務。</p>
+
+<p>此信件由系統自動寄出，請勿直接回覆。</p>
+{% endblock %}
