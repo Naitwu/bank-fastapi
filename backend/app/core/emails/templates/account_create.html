@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block title %}銀行帳戶開立成功通知{% endblock %}
+
+{% block header %}銀行帳戶開立成功{% endblock %}
+
+{% block content %}
+<p>親愛的 {{ full_name }} 您好，</p>
+
+<p>恭喜您已成功在 {{ site_name }} 開立銀行帳戶！您的帳戶資訊如下：</p>
+
+<div style="background-color: #f8f9fa; border-left: 4px solid #007bff; padding: 15px; margin: 20px 0;">
+    <p style="margin: 8px 0;"><strong>帳戶名稱：</strong>{{ account_name }}</p>
+    <p style="margin: 8px 0;"><strong>帳戶號碼：</strong>{{ account_number }}</p>
+    <p style="margin: 8px 0;"><strong>帳戶類型：</strong>{{ account_type }}</p>
+    <p style="margin: 8px 0;"><strong>幣別：</strong>{{ currency }}</p>
+</div>
+
+<div style="background-color: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin: 20px 0;">
+    <p style="margin: 0;"><strong>⚠️ 重要提醒</strong></p>
+    <p style="margin: 8px 0 0 0;">為了完全啟用該帳戶，請攜帶下列證件至鄰近分行完成身分驗證：</p>
+    <ul style="margin: 8px 0; padding-left: 20px;">
+        <li>國民身分證正本</li>
+        <li>第二證件（如健保卡、駕照等）</li>
+        <li>印章（供開戶使用）</li>
+    </ul>
+    <p style="margin: 8px 0 0 0; color: #856404;">完成驗證後，您將可以使用完整的帳戶功能。</p>
+</div>
+
+<p>若您對帳戶有任何疑問，歡迎隨時與我們聯繫。</p>
+
+<p style="margin-top: 30px; color: #6c757d; font-size: 0.9em;">此信件由系統自動寄出，請勿直接回覆。</p>
+{% endblock %}
