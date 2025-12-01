@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block title %}帳戶交易通知{% endblock %}
+
+{% block header %}帳戶交易通知{% endblock %}
+
+{% block content %}
+<p>親愛的 {{ full_name }} 您好，</p>
+
+<p>您的帳戶已完成一筆交易，詳細資訊如下：</p>
+
+<div style="background-color: #f8f9fa; border-left: 4px solid #28a745; padding: 15px; margin: 20px 0;">
+    <p style="margin: 8px 0;"><strong>交易類型：</strong>{{ action }}</p>
+    <p style="margin: 8px 0;"><strong>交易金額：</strong>{{ currency }} {{ amount }}</p>
+    <p style="margin: 8px 0;"><strong>帳戶名稱：</strong>{{ account_name }}</p>
+    <p style="margin: 8px 0;"><strong>帳戶號碼：</strong>{{ account_number }}</p>
+    <p style="margin: 8px 0;"><strong>交易日期：</strong>{{ transaction_date }}</p>
+    <p style="margin: 8px 0;"><strong>交易參考號碼：</strong>{{ reference }}</p>
+</div>
+
+{% if description %}
+<div style="background-color: #e7f3ff; border-left: 4px solid #007bff; padding: 15px; margin: 20px 0;">
+    <p style="margin: 0;"><strong>交易說明：</strong></p>
+    <p style="margin: 8px 0 0 0;">{{ description }}</p>
+</div>
+{% endif %}
+
+<div style="background-color: #d4edda; border-left: 4px solid #28a745; padding: 15px; margin: 20px 0;">
+    <p style="margin: 0;"><strong>目前帳戶餘額：</strong>{{ currency }} {{ balance }}</p>
+</div>
+
+<div style="background-color: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin: 20px 0;">
+    <p style="margin: 0;"><strong>⚠️ 安全提醒</strong></p>
+    <p style="margin: 8px 0 0 0;">如果您未進行此筆交易，請立即聯繫我們的客服中心：</p>
+    <ul style="margin: 8px 0; padding-left: 20px;">
+        <li>客服專線：0800-123-456（24小時服務）</li>
+        <li>或透過網路銀行「客服中心」功能回報</li>
+    </ul>
+</div>
+
+<p>感謝您使用 {{ site_name }} 的服務。</p>
+
+<p style="margin-top: 30px; color: #6c757d; font-size: 0.9em;">此信件由系統自動寄出，請勿直接回覆。</p>
+{% endblock %}

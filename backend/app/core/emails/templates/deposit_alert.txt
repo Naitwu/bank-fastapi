@@ -1,0 +1,37 @@
+{% extends "base.txt" %}
+
+{% block header %}帳戶交易通知{% endblock %}
+
+{% block content %}
+親愛的 {{ full_name }} 您好，
+
+您的帳戶已完成一筆交易，詳細資訊如下：
+
+─────────────────────────────
+交易類型：{{ action }}
+交易金額：{{ currency }} {{ amount }}
+帳戶名稱：{{ account_name }}
+帳戶號碼：{{ account_number }}
+交易日期：{{ transaction_date }}
+交易參考號碼：{{ reference }}
+─────────────────────────────
+
+{% if description %}
+【交易說明】
+{{ description }}
+
+{% endif %}
+【目前帳戶餘額】
+{{ currency }} {{ balance }}
+
+【安全提醒】
+
+如果您未進行此筆交易，請立即聯繫我們的客服中心：
+
+• 客服專線：0800-123-456（24小時服務）
+• 或透過網路銀行「客服中心」功能回報
+
+感謝您使用 {{ site_name }} 的服務。
+
+此信件由系統自動寄出，請勿直接回覆。
+{% endblock %}
