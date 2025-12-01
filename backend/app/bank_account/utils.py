@@ -40,7 +40,7 @@ def generate_account_number(currency: AccountCurrencyEnum) -> str:
     try:
         """
         full_account_number structure:
-        [Bank Code (3 digits)][Branch Code (4 digits)][Currency Code (2 digits)][Random Digits (10 digits)][Check Digit (1 digit)]
+        [Bank Code (3 digits)][Branch Code (4 digits)][Currency Code (3 digits)][Random Digits (9 digits)][Check Digit (1 digit)]
         Total Length: 20 digits
         """
         if not all([settings.BANK_CODE, settings.BANK_BRANCH_CODE]):

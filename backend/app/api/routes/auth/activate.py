@@ -12,6 +12,7 @@ logger = get_logger()
 
 router = APIRouter(
     prefix="/auth",
+    tags=["Authentication"],
 )
 
 @router.get("/activate/{token}", status_code=status.HTTP_200_OK)

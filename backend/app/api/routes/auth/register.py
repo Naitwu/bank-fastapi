@@ -9,6 +9,7 @@ logger = get_logger()
 
 router = APIRouter(
     prefix="/auth",
+    tags=["Authentication"],
 )
 
 

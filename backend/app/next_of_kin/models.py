@@ -10,6 +10,7 @@ from backend.app.next_of_kin.schema import NextOfKinBaseSchema
 if TYPE_CHECKING:
     from backend.app.auth.models import User
 
+
 class NextOfKin(NextOfKinBaseSchema, table=True):
     id: uuid.UUID = Field(
         sa_column=Column(
@@ -35,5 +36,5 @@ class NextOfKin(NextOfKinBaseSchema, table=True):
         ),
     )
 
-    user_id: uuid.UUID = Field(foreign_key="user.id")
+    user_id: uuid.UUID = Field(foreign_key="user.id", ondelete="CASCADE")
     user: "User" = Relationship(back_populates="next_of_kins")

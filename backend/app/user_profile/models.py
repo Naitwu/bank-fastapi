@@ -36,5 +36,5 @@ class Profile(ProfileBaseSchema, table=True):
         ),
     )
 
-    user_id: uuid.UUID = Field(foreign_key="user.id")
+    user_id: uuid.UUID = Field(foreign_key="user.id", ondelete="CASCADE")
     user: "User" = Relationship(back_populates="profile")

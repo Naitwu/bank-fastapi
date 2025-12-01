@@ -12,6 +12,7 @@ logger = get_logger()
 
 router = APIRouter(
     prefix="/auth",
+    tags=["Authentication"],
 )
 
 @router.post("/refresh", status_code=status.HTTP_200_OK)

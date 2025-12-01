@@ -12,6 +12,7 @@ logger = get_logger()
 
 router = APIRouter(
     prefix="/profile",
+    tags=["User Profile"],
 )
 
 

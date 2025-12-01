@@ -11,6 +11,7 @@ logger = get_logger()
 
 router = APIRouter(
     prefix="/profile",
+    tags=["User Profile"],
 )
 
 @router.post("/create", response_model=ProfileCreateSchema, status_code=status.HTTP_201_CREATED)

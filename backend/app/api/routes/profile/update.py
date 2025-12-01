@@ -11,6 +11,7 @@ logger = get_logger()
 
 router = APIRouter(
     prefix="/profile",
+    tags=["User Profile"],
 )
 @router.put("/update", response_model=Profile, status_code=status.HTTP_200_OK)
 async def update_profile(

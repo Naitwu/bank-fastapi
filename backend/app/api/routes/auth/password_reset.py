@@ -11,6 +11,7 @@ logger = get_logger()
 
 router = APIRouter(
     prefix="/auth",
+    tags=["Authentication"],
 )
 
 @router.post("/request-password-reset", status_code=status.HTTP_200_OK)
