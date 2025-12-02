@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+
+{% block title %}轉帳通知{% endblock %}
+
+{% block header %}{% if is_sender %}轉帳成功通知{% else %}收款成功通知{% endif %}{% endblock %}
+
+{% block content %}
+<p>親愛的 {{ user_name }} 您好，</p>
+
+{% if is_sender %}
+<p>您的轉帳交易已成功完成，以下是交易詳情：</p>
+
+<table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
+    <tr>
+        <td style="padding: 10px; border-bottom: 1px solid #e0e0e0; color: #666; width: 40%;">交易類型</td>
+        <td style="padding: 10px; border-bottom: 1px solid #e0e0e0; font-weight: bold;">轉出</td>
+    </tr>
+    <tr>
+        <td style="padding: 10px; border-bottom: 1px solid #e0e0e0; color: #666;">轉出金額</td>
+        <td style="padding: 10px; border-bottom: 1px solid #e0e0e0; font-weight: bold; color: #dc3545;">
+            {{ from_currency }} {{ amount }}
+        </td>
+    </tr>
+    {% if from_currency != to_currency %}
+    <tr>
+        <td style="padding: 10px; border-bottom: 1px solid #e0e0e0; color: #666;">對方收到金額</td>
+        <td style="padding: 10px; border-bottom: 1px solid #e0e0e0;">
+            {{ to_currency }} {{ converted_amount }}
+        </td>
+    </tr>
+    <tr>
+        <td style="padding: 10px; border-bottom: 1px solid #e0e0e0; color: #666;">匯率</td>
+        <td style="padding: 10px; border-bottom: 1px solid #e0e0e0;">
+            {{ exchange_rate }}
+        </td>
+    </tr>
+    <tr>
+        <td style="padding: 10px; border-bottom: 1px solid #e0e0e0; color: #666;">轉換手續費</td>
+        <td style="padding: 10px; border-bottom: 1px solid #e0e0e0;">
+            {{ from_currency }} {{ conversion_fee }}
+        </td>
+    </tr>
+    {% endif %}
+    <tr>
+        <td style="padding: 10px; border-bottom: 1px solid #e0e0e0; color: #666;">收款人</td>
+        <td style="padding: 10px; border-bottom: 1px solid #e0e0e0;">{{ conterparty_name }}</td>
+    </tr>
+    <tr>
+        <td style="padding: 10px; border-bottom: 1px solid #e0e0e0; color: #666;">收款帳號</td>
+        <td style="padding: 10px; border-bottom: 1px solid #e0e0e0;">{{ conterparty_account }}</td>
+    </tr>
+    {% if description %}
+    <tr>
+        <td style="padding: 10px; border-bottom: 1px solid #e0e0e0; color: #666;">備註</td>
+        <td style="padding: 10px; border-bottom: 1px solid #e0e0e0;">{{ description }}</td>
+    </tr>
+    {% endif %}
+    <tr>
+        <td style="padding: 10px; border-bottom: 1px solid #e0e0e0; color: #666;">交易參考編號</td>
+        <td style="padding: 10px; border-bottom: 1px solid #e0e0e0;">{{ reference }}</td>
+    </tr>
+    <tr>
+        <td style="padding: 10px; border-bottom: 1px solid #e0e0e0; color: #666;">交易時間</td>
+        <td style="padding: 10px; border-bottom: 1px solid #e0e0e0;">{{ transaction_date }}</td>
+    </tr>
+    <tr style="background-color: #f8f9fa;">
+        <td style="padding: 10px; color: #666;">帳戶餘額</td>
+        <td style="padding: 10px; font-weight: bold; color: #28a745;">
+            {{ user_currency }} {{ user_balance }}
+        </td>
+    </tr>
+</table>
+
+<p style="color: #666; font-size: 14px;">請確認交易資訊是否正確。如有任何疑問，請立即聯繫客服中心。</p>
+
+{% else %}
+<p>您已成功收到一筆款項，以下是交易詳情：</p>
+
+<table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
+    <tr>
+        <td style="padding: 10px; border-bottom: 1px solid #e0e0e0; color: #666; width: 40%;">交易類型</td>
+        <td style="padding: 10px; border-bottom: 1px solid #e0e0e0; font-weight: bold;">收款</td>
+    </tr>
+    <tr>
+        <td style="padding: 10px; border-bottom: 1px solid #e0e0e0; color: #666;">收款金額</td>
+        <td style="padding: 10px; border-bottom: 1px solid #e0e0e0; font-weight: bold; color: #28a745;">
+            {{ to_currency }} {{ converted_amount }}
+        </td>
+    </tr>
+    {% if from_currency != to_currency %}
+    <tr>
+        <td style="padding: 10px; border-bottom: 1px solid #e0e0e0; color: #666;">對方轉出金額</td>
+        <td style="padding: 10px; border-bottom: 1px solid #e0e0e0;">
+            {{ from_currency }} {{ amount }}
+        </td>
+    </tr>
+    <tr>
+        <td style="padding: 10px; border-bottom: 1px solid #e0e0e0; color: #666;">匯率</td>
+        <td style="padding: 10px; border-bottom: 1px solid #e0e0e0;">
+            {{ exchange_rate }}
+        </td>
+    </tr>
+    {% endif %}
+    <tr>
+        <td style="padding: 10px; border-bottom: 1px solid #e0e0e0; color: #666;">付款人</td>
+        <td style="padding: 10px; border-bottom: 1px solid #e0e0e0;">{{ conterparty_name }}</td>
+    </tr>
+    <tr>
+        <td style="padding: 10px; border-bottom: 1px solid #e0e0e0; color: #666;">付款帳號</td>
+        <td style="padding: 10px; border-bottom: 1px solid #e0e0e0;">{{ conterparty_account }}</td>
+    </tr>
+    {% if description %}
+    <tr>
+        <td style="padding: 10px; border-bottom: 1px solid #e0e0e0; color: #666;">備註</td>
+        <td style="padding: 10px; border-bottom: 1px solid #e0e0e0;">{{ description }}</td>
+    </tr>
+    {% endif %}
+    <tr>
+        <td style="padding: 10px; border-bottom: 1px solid #e0e0e0; color: #666;">交易參考編號</td>
+        <td style="padding: 10px; border-bottom: 1px solid #e0e0e0;">{{ reference }}</td>
+    </tr>
+    <tr>
+        <td style="padding: 10px; border-bottom: 1px solid #e0e0e0; color: #666;">交易時間</td>
+        <td style="padding: 10px; border-bottom: 1px solid #e0e0e0;">{{ transaction_date }}</td>
+    </tr>
+    <tr style="background-color: #f8f9fa;">
+        <td style="padding: 10px; color: #666;">帳戶餘額</td>
+        <td style="padding: 10px; font-weight: bold; color: #28a745;">
+            {{ user_currency }} {{ user_balance }}
+        </td>
+    </tr>
+</table>
+
+<p style="color: #666; font-size: 14px;">款項已成功入帳至您的帳戶。如有任何疑問，請立即聯繫客服中心。</p>
+
+{% endif %}
+
+<div style="background-color: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin: 20px 0;">
+    <p style="margin: 0; color: #856404; font-size: 14px;">
+        <strong>安全提醒：</strong>請妥善保管您的交易記錄。如發現任何異常交易，請立即聯繫客服中心。
+    </p>
+</div>
+
+<p style="color: #999; font-size: 12px;">此信件由系統自動寄出，請勿直接回覆。</p>
+{% endblock %}
