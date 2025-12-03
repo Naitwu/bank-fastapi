@@ -45,3 +45,28 @@ class DepositRequestSchema(SQLModel):
     account_id: uuid.UUID
     amount: Annotated[Decimal, Field(decimal_places=2, ge=0)]
     description: str = Field(max_length=255)
+
+class TransferRequestSchema(SQLModel):
+    sender_account_id: uuid.UUID
+    receiver_account_number: str = Field(max_length=20)
+    amount: Annotated[Decimal, Field(decimal_places=2, ge=0)]
+    description: str = Field(max_length=255)
+    security_answer: str = Field(max_length=255)
+
+class TransferOTPVerificationSchema(SQLModel):
+    transfer_reference: str
+    otp: str = Field(max_length=6, min_length=6)
+
+class TransferResponseSchema(SQLModel):
+    status: str
+    message: str
+    data: dict | None = None
+
+class CurrencyConversionSchema(SQLModel):
+    amount: Annotated[Decimal, Field(decimal_places=2, ge=0)]
+    from_currency: str
+    to_currency: str
+    exchange_rate: Decimal
+    original_amount: Annotated[Decimal, Field(decimal_places=2, ge=0)]
+    converted_amount: Annotated[Decimal, Field(decimal_places=2, ge=0)]
+    conversion_fee: Decimal=Field(default=Decimal("0.00"))

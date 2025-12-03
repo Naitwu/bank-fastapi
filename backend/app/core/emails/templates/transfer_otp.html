@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block title %}轉帳驗證碼{% endblock %}
+
+{% block header %}轉帳驗證碼通知{% endblock %}
+
+{% block content %}
+<p>親愛的 {{ user_name }} 您好，</p>
+
+<p>您正在進行轉帳操作，請使用以下驗證碼完成交易驗證：</p>
+
+<div style="background-color: #f8f9fa; border: 2px solid #007bff; border-radius: 8px; padding: 30px; text-align: center; margin: 30px 0;">
+    <p style="margin: 0 0 10px 0; color: #666; font-size: 14px;">您的驗證碼</p>
+    <p style="margin: 0; font-size: 36px; font-weight: bold; color: #007bff; letter-spacing: 8px; font-family: 'Courier New', monospace;">
+        {{ otp }}
+    </p>
+</div>
+
+<div style="background-color: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin: 20px 0;">
+    <p style="margin: 0 0 10px 0; color: #856404; font-weight: bold;">
+        <strong>重要提醒：</strong>
+    </p>
+    <ul style="margin: 0; padding-left: 20px; color: #856404; font-size: 14px;">
+        <li style="margin-bottom: 8px;"><strong>此驗證碼有效期限為 {{ expiry_time }} 分鐘。</strong></li>
+        <li style="margin-bottom: 8px;">請勿將驗證碼提供給任何人，包括本行職員。</li>
+        <li style="margin-bottom: 8px;">如果您未進行轉帳操作，請立即聯繫客服中心。</li>
+    </ul>
+</div>
+
+<p style="color: #666; font-size: 14px;">為確保您的帳戶安全，請確認您正在進行的交易，並在時限內輸入驗證碼。</p>
+
+<div style="background-color: #f8f9fa; border-radius: 5px; padding: 15px; margin: 20px 0;">
+    <p style="margin: 0; color: #666; font-size: 13px;">
+        <strong>安全提示：</strong><br>
+        • 本行絕不會以任何方式向您索取驗證碼<br>
+        • 請確認收款帳戶資訊正確無誤<br>
+        • 驗證碼僅供單次使用，過期後將失效
+    </p>
+</div>
+
+<p style="color: #999; font-size: 12px;">此信件由系統自動寄出，請勿直接回覆。</p>
+{% endblock %}
