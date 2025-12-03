@@ -51,10 +51,11 @@ class TransferRequestSchema(SQLModel):
     receiver_account_number: str = Field(max_length=20)
     amount: Annotated[Decimal, Field(decimal_places=2, ge=0)]
     description: str = Field(max_length=255)
+    security_answer: str = Field(max_length=255)
 
 class TransferOTPVerificationSchema(SQLModel):
     transfer_reference: str
-    otp_code: str = Field(max_length=6, min_length=6)
+    otp: str = Field(max_length=6, min_length=6)
 
 class TransferResponseSchema(SQLModel):
     status: str
