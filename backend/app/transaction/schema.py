@@ -70,3 +70,9 @@ class CurrencyConversionSchema(SQLModel):
     original_amount: Annotated[Decimal, Field(decimal_places=2, ge=0)]
     converted_amount: Annotated[Decimal, Field(decimal_places=2, ge=0)]
     conversion_fee: Decimal=Field(default=Decimal("0.00"))
+
+class WithdrawalRequestSchema(SQLModel):
+    account_number: str = Field(max_length=20)
+    amount: Annotated[Decimal, Field(decimal_places=2, ge=0)]
+    username: str = Field(max_length=12, min_length=1)
+    description: str = Field(max_length=255)

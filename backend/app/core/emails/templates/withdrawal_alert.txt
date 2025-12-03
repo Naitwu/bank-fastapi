@@ -1,0 +1,25 @@
+{% extends "base.txt" %}
+
+{% block header %}提款成功通知{% endblock %}
+
+{% block content %}
+親愛的 {{ full_name }} 您好，
+
+您的提款交易已成功完成，以下是交易詳情：
+
+交易類型：提款
+提款金額：{{ currency }} {{ amount }}
+{% if description %}
+備註：{{ description }}
+{% endif %}
+交易參考編號：{{ reference }}
+交易時間：{{ transaction_date }}
+帳戶餘額：{{ currency }} {{ balance | round(2) }}
+
+請確認交易資訊是否正確。如有任何疑問，請立即聯繫客服中心。
+
+【安全提醒】
+請妥善保管您的交易記錄。如發現任何異常交易，請立即聯繫客服中心。
+
+此信件由系統自動寄出，請勿直接回覆。
+{% endblock %}

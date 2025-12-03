@@ -1,0 +1,36 @@
+from decimal import Decimal
+from datetime import datetime
+from backend.app.core.emails.base import EmailTemplate
+from backend.app.core.config import settings
+
+class WithdrawalAlertEmail(EmailTemplate):
+    template_name = "withdrawal_alert.html"
+    template_name_plain = "withdrawal_alert.txt"
+    subject = "Withdrawal Notification"
+
+async def send_withdrawal_alert_email(
+    email: str,
+    full_name: str,
+    amount: Decimal,
+    account_number: str,
+    account_name: str,
+    currency: str,
+    description: str,
+    transaction_date: datetime,
+    reference: str,
+    balance: Decimal,
+) -> None:
+    context = {
+        "user_name": full_name,
+        "amount": amount,
+        "account_number" : account_number,
+        "account_name": account_name,
+        "currency": currency,
+        "description": description,
+        "transaction_date": transaction_date.strftime("%Y-%m-%d %H:%M:%S UTC"),
+        "reference": reference,
+        "balance": balance,
+        "site_name": settings.SITE_NAME,
+        "support_email": settings.SUPPORT_EMAIL,
+    }
+    await WithdrawalAlertEmail.send_email(email_to=email, context=context)
