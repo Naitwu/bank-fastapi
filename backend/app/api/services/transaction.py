@@ -3,7 +3,7 @@ from datetime import datetime, timezone, timedelta
 from decimal import Decimal
 from fastapi import HTTPException, status
 from sqlmodel.ext.asyncio.session import AsyncSession
-from sqlmodel import select
+from sqlmodel import desc, func, or_, any_, select
 
 from backend.app.bank_account.models import BankAccount
 from backend.app.transaction.models import Transaction
@@ -566,4 +566,88 @@ async def process_withdrawal(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="An unexpected error occurred while processing the withdrawal. Please try again later.",
+        )
+
+async def get_user_transactions(
+    user_id: uuid.UUID,
+    session: AsyncSession,
+    skip: int = 0,
+    limit: int = 20,
+    start_date: datetime | None = None,
+    end_date: datetime | None = None,
+    transaction_type: TransactionTypeEnum | None = None,
+    transaction_category: TransactionCategoryEnum | None = None,
+    transaction_status: TransactionStatusEnum | None = None,
+    min_amount: Decimal | None = None,
+    max_amount: Decimal | None = None,
+) -> tuple[list[Transaction], int]:
+    try:
+        if start_date and end_date and start_date > end_date:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="start_date cannot be later than end_date.",
+            )
+        account_stmt = select(BankAccount.id).where(BankAccount.user_id == user_id)
+        account_result = await session.exec(account_stmt)
+        account_ids = [account_id for account_id in account_result.all()]
+        if not account_ids:
+            return [], 0
+
+        base_query = select(Transaction).where(
+            or_(
+                Transaction.sender_id == user_id,
+                Transaction.receiver_id == user_id,
+            )
+        )
+        if start_date:
+            base_query = base_query.where(Transaction.created_at >= start_date)
+        if end_date:
+            base_query = base_query.where(Transaction.created_at <= end_date)
+        if transaction_type:
+            base_query = base_query.where(Transaction.transaction_type == transaction_type)
+        if transaction_category:
+            base_query = base_query.where(Transaction.transaction_category == transaction_category)
+        if transaction_status:
+            base_query = base_query.where(Transaction.status == transaction_status)
+        if min_amount:
+            base_query = base_query.where(Transaction.amount >= min_amount)
+        if max_amount:
+            base_query = base_query.where(Transaction.amount <= max_amount)
+
+        base_query = base_query.order_by(desc(Transaction.created_at))
+
+        count_query = select(func.count()).select_from(base_query.subquery())
+        total_result = await session.exec(count_query)
+        total = total_result.first() or 0
+
+        transactions = await session.exec(base_query.offset(skip).limit(limit))
+
+        transaction_list = list(transactions.all())
+
+        for transaction in transaction_list:
+            await session.refresh(transaction, ["sender", "receiver", "sender_account", "receiver_account"])
+
+            if not transaction.transaction_metadata:
+                transaction.transaction_metadata = {}
+
+            if transaction.sender_id == user_id:
+                if transaction.receiver:
+                    transaction.transaction_metadata["counterparty_name"] = transaction.receiver.full_name
+                if transaction.receiver_account:
+                    transaction.transaction_metadata["counterparty_account"] = transaction.receiver_account.account_number
+            else:
+                if transaction.sender:
+                    transaction.transaction_metadata["counterparty_name"] = transaction.sender.full_name
+                if transaction.sender_account:
+                    transaction.transaction_metadata["counterparty_account"] = transaction.sender_account.account_number
+
+        return transaction_list, total
+    except HTTPException as http_exc:
+        logger.error(f"Error retrieving transactions: {http_exc.detail}", exc_info=True)
+        raise http_exc
+    except Exception as exc:
+        logger.error(f"Unexpected error retrieving transactions: {exc}", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="An unexpected error occurred while retrieving transactions. Please try again later.",
         )
