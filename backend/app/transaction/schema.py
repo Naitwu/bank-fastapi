@@ -135,3 +135,25 @@ class TransactionFilterParamsSchema(SQLModel):
         ge=0,
         description="Filter transactions with amount less than or equal to this value."
     )
+
+class StatementRequestSchema(SQLModel):
+    start_date: datetime
+    end_date: datetime
+    account_number: str | None = Field(
+        default=None,
+        max_length=20,
+        description="Optional account number to filter the statement for a specific bank account."
+    )
+
+class StatementResponseSchema(SQLModel):
+    status: str
+    message: str
+    task_id: str | None = None
+    statement_id : str | None = None
+    generated_at: datetime | None = None
+    expires_at: datetime | None = None
+
+class TransactionReviewSchema(SQLModel):
+    if_fraud: bool
+    notes: str | None = None
+    approve_transaction: bool = False
