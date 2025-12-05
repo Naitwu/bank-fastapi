@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block title %}虛擬卡片已被封鎖{% endblock %}
+
+{% block header %}虛擬卡片已被封鎖{% endblock %}
+
+{% block content %}
+<p>親愛的 {{ full_name }} 您好,</p>
+
+<p>我們必須通知您,您的虛擬卡片已被系統封鎖,目前無法進行任何交易。</p>
+
+<div style="background-color: #f8d7da; border-left: 4px solid #dc3545; padding: 15px; margin: 20px 0;">
+    <p style="margin: 0; color: #721c24;"><strong>卡片狀態: 已封鎖</strong></p>
+    <p style="margin: 10px 0 0 0; color: #721c24;">您的卡片已被暫時停用,所有交易功能已被限制。</p>
+</div>
+
+<div style="background-color: #f8f9fa; padding: 20px; border-radius: 5px; margin: 20px 0;">
+    <h3 style="margin-top: 0; color: #333;">封鎖資訊</h3>
+    <table style="width: 100%; border-collapse: collapse;">
+        <tr>
+            <td style="padding: 8px 0; font-weight: bold; width: 40%;">卡片類型:</td>
+            <td style="padding: 8px 0;">{{ card_type }}</td>
+        </tr>
+        <tr>
+            <td style="padding: 8px 0; font-weight: bold;">卡號:</td>
+            <td style="padding: 8px 0; font-family: monospace; letter-spacing: 2px;">{{ masked_card_number }}</td>
+        </tr>
+        <tr>
+            <td style="padding: 8px 0; font-weight: bold;">封鎖原因:</td>
+            <td style="padding: 8px 0; color: #dc3545; font-weight: bold;">{{ block_reason }}</td>
+        </tr>
+        <tr>
+            <td style="padding: 8px 0; font-weight: bold; vertical-align: top;">原因說明:</td>
+            <td style="padding: 8px 0;">{{ blocked_reason_description }}</td>
+        </tr>
+        <tr>
+            <td style="padding: 8px 0; font-weight: bold;">封鎖時間:</td>
+            <td style="padding: 8px 0;">{{ blocked_at }}</td>
+        </tr>
+    </table>
+</div>
+
+<div style="background-color: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin: 20px 0;">
+    <p style="margin: 0; color: #856404;"><strong>後續處理步驟</strong></p>
+    <ol style="margin: 10px 0 0 0; padding-left: 20px; color: #856404;">
+        <li>請仔細確認封鎖原因是否與您的操作相關</li>
+        <li>如有疑問或認為這是系統誤判,請立即聯繫客服團隊</li>
+        <li>我們的專員將協助您了解詳細情況並評估解除封鎖的可能性</li>
+        <li>在解除封鎖前,此卡片將無法用於任何交易</li>
+    </ol>
+</div>
+
+<div style="background-color: #e7f3ff; border-left: 4px solid #2196F3; padding: 15px; margin: 20px 0;">
+    <p style="margin: 0; color: #014361;"><strong>安全提醒</strong></p>
+    <ul style="margin: 10px 0 0 0; padding-left: 20px; color: #014361;">
+        <li>如果您未曾進行任何可疑操作,您的帳戶可能已被盜用</li>
+        <li>請立即檢查您的其他帳戶安全性</li>
+        <li>建議更改您的登入密碼和安全問題答案</li>
+        <li>切勿向任何人透露您的帳戶資訊或驗證碼</li>
+    </ul>
+</div>
+
+<p style="margin-top: 20px;">如需協助或查詢詳細資訊,請儘速聯繫我們的客服團隊。我們將竭誠為您服務。</p>
+
+<p style="margin-top: 30px;">此信件由系統自動寄出,請勿直接回覆。</p>
+{% endblock %}

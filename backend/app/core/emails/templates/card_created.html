@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block title %}虛擬卡片建立成功{% endblock %}
+
+{% block header %}虛擬卡片建立成功{% endblock %}
+
+{% block content %}
+<p>親愛的 {{ full_name }} 您好,</p>
+
+<p>您的虛擬卡片已成功建立,詳細資訊如下:</p>
+
+<div style="background-color: #f8f9fa; padding: 20px; border-radius: 5px; margin: 20px 0;">
+    <table style="width: 100%; border-collapse: collapse;">
+        <tr>
+            <td style="padding: 8px 0; font-weight: bold; width: 40%;">卡片類型:</td>
+            <td style="padding: 8px 0;">{{ card_type }}</td>
+        </tr>
+        <tr>
+            <td style="padding: 8px 0; font-weight: bold;">幣別:</td>
+            <td style="padding: 8px 0;">{{ currency }}</td>
+        </tr>
+        <tr>
+            <td style="padding: 8px 0; font-weight: bold;">卡號:</td>
+            <td style="padding: 8px 0; font-family: monospace; letter-spacing: 2px;">{{ masked_card_number }}</td>
+        </tr>
+        <tr>
+            <td style="padding: 8px 0; font-weight: bold;">持卡人姓名:</td>
+            <td style="padding: 8px 0;">{{ name_on_card }}</td>
+        </tr>
+        <tr>
+            <td style="padding: 8px 0; font-weight: bold;">每日消費限額:</td>
+            <td style="padding: 8px 0;">{{ daily_limit }}</td>
+        </tr>
+        <tr>
+            <td style="padding: 8px 0; font-weight: bold;">每月消費限額:</td>
+            <td style="padding: 8px 0;">{{ monthly_limit }}</td>
+        </tr>
+    </table>
+</div>
+
+<div style="background-color: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin: 20px 0;">
+    <p style="margin: 0; color: #856404;"><strong>卡片狀態: 未啟用</strong></p>
+    <p style="margin: 10px 0 0 0; color: #856404;">您的虛擬卡片目前狀態為未啟用,我們的專員將盡快為您審核並啟用卡片。</p>
+</div>
+
+<p>當卡片通過審核並成功啟用後,您將收到另一封通知信件,屆時我們將提供完整的卡片資訊,包含 CVV 安全碼。</p>
+
+<p>在此之前,請您耐心等候。若有任何疑問,歡迎隨時與我們聯繫。</p>
+
+<p style="margin-top: 30px;">此信件由系統自動寄出,請勿直接回覆。</p>
+{% endblock %}

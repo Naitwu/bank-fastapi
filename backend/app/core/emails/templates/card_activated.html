@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block title %}虛擬卡片啟用成功{% endblock %}
+
+{% block header %}虛擬卡片啟用成功{% endblock %}
+
+{% block content %}
+<p>親愛的 {{ full_name }} 您好,</p>
+
+<p>恭喜您! 您的虛擬卡片已通過審核並成功啟用,現在可以開始使用了。</p>
+
+<div style="background-color: #d4edda; border-left: 4px solid #28a745; padding: 15px; margin: 20px 0;">
+    <p style="margin: 0; color: #155724;"><strong>卡片狀態: 已啟用</strong></p>
+    <p style="margin: 10px 0 0 0; color: #155724;">您的虛擬卡片現在可以正常使用進行線上交易。</p>
+</div>
+
+<div style="background-color: #f8f9fa; padding: 20px; border-radius: 5px; margin: 20px 0;">
+    <h3 style="margin-top: 0; color: #333;">卡片完整資訊</h3>
+    <table style="width: 100%; border-collapse: collapse;">
+        <tr>
+            <td style="padding: 8px 0; font-weight: bold; width: 40%;">卡片類型:</td>
+            <td style="padding: 8px 0;">{{ card_type }}</td>
+        </tr>
+        <tr>
+            <td style="padding: 8px 0; font-weight: bold;">幣別:</td>
+            <td style="padding: 8px 0;">{{ currency }}</td>
+        </tr>
+        <tr>
+            <td style="padding: 8px 0; font-weight: bold;">卡號:</td>
+            <td style="padding: 8px 0; font-family: monospace; letter-spacing: 2px;">{{ masked_card_number }}</td>
+        </tr>
+        <tr>
+            <td style="padding: 8px 0; font-weight: bold;">到期日:</td>
+            <td style="padding: 8px 0;">{{ expiry_date }}</td>
+        </tr>
+        <tr>
+            <td style="padding: 8px 0; font-weight: bold;">CVV 安全碼:</td>
+            <td style="padding: 8px 0; font-family: monospace; font-size: 18px; font-weight: bold; color: #dc3545;">{{ cvv }}</td>
+        </tr>
+        <tr>
+            <td style="padding: 8px 0; font-weight: bold;">每日消費限額:</td>
+            <td style="padding: 8px 0;">{{ daily_limit }}</td>
+        </tr>
+        <tr>
+            <td style="padding: 8px 0; font-weight: bold;">每月消費限額:</td>
+            <td style="padding: 8px 0;">{{ monthly_limit }}</td>
+        </tr>
+    </table>
+</div>
+
+<div style="background-color: #f8d7da; border-left: 4px solid #dc3545; padding: 15px; margin: 20px 0;">
+    <p style="margin: 0; color: #721c24;"><strong>重要安全提醒</strong></p>
+    <ul style="margin: 10px 0 0 0; padding-left: 20px; color: #721c24;">
+        <li>CVV 安全碼為您的卡片重要資訊,請妥善保管,切勿告知他人</li>
+        <li>本行絕不會以任何形式要求您提供完整卡號或 CVV</li>
+        <li>請定期檢查您的交易記錄,如發現異常請立即聯繫我們</li>
+        <li>建議您收到此信件後,將 CVV 記錄於安全處並刪除此郵件</li>
+    </ul>
+</div>
+
+<p>如果您發現任何可疑活動或需要協助,請立即與我們的客服團隊聯繫。</p>
+
+<p style="margin-top: 30px;">此信件由系統自動寄出,請勿直接回覆。</p>
+{% endblock %}
