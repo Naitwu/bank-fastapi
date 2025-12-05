@@ -1,9 +1,10 @@
+from typing import Any
 import uuid
 from datetime import datetime, timezone, timedelta
 from decimal import Decimal
 from fastapi import HTTPException, status
 from sqlmodel.ext.asyncio.session import AsyncSession
-from sqlmodel import select
+from sqlmodel import desc, func, or_, any_, select
 
 from backend.app.bank_account.models import BankAccount
 from backend.app.transaction.models import Transaction
@@ -21,6 +22,7 @@ from backend.app.auth.utils import generate_otp
 from backend.app.core.config import settings
 from backend.app.auth.models import User
 from backend.app.core.logging import get_logger
+from backend.app.core.tasks.statement import generate_statement_pdf
 
 logger = get_logger()
 
@@ -566,4 +568,308 @@ async def process_withdrawal(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="An unexpected error occurred while processing the withdrawal. Please try again later.",
+        )
+
+async def get_user_transactions(
+    user_id: uuid.UUID,
+    session: AsyncSession,
+    skip: int = 0,
+    limit: int = 20,
+    start_date: datetime | None = None,
+    end_date: datetime | None = None,
+    transaction_type: TransactionTypeEnum | None = None,
+    transaction_category: TransactionCategoryEnum | None = None,
+    transaction_status: TransactionStatusEnum | None = None,
+    min_amount: Decimal | None = None,
+    max_amount: Decimal | None = None,
+) -> tuple[list[Transaction], int]:
+    try:
+        if start_date and end_date and start_date > end_date:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="start_date cannot be later than end_date.",
+            )
+        account_stmt = select(BankAccount.id).where(BankAccount.user_id == user_id)
+        account_result = await session.exec(account_stmt)
+        account_ids = [account_id for account_id in account_result.all()]
+        if not account_ids:
+            return [], 0
+
+        base_query = select(Transaction).where(
+            or_(
+                Transaction.sender_id == user_id,
+                Transaction.receiver_id == user_id,
+            )
+        )
+        if start_date:
+            base_query = base_query.where(Transaction.created_at >= start_date)
+        if end_date:
+            base_query = base_query.where(Transaction.created_at <= end_date)
+        if transaction_type:
+            base_query = base_query.where(Transaction.transaction_type == transaction_type)
+        if transaction_category:
+            base_query = base_query.where(Transaction.transaction_category == transaction_category)
+        if transaction_status:
+            base_query = base_query.where(Transaction.status == transaction_status)
+        if min_amount:
+            base_query = base_query.where(Transaction.amount >= min_amount)
+        if max_amount:
+            base_query = base_query.where(Transaction.amount <= max_amount)
+
+        base_query = base_query.order_by(desc(Transaction.created_at))
+
+        count_query = select(func.count()).select_from(base_query.subquery())
+        total_result = await session.exec(count_query)
+        total = total_result.first() or 0
+
+        transactions = await session.exec(base_query.offset(skip).limit(limit))
+
+        transaction_list = list(transactions.all())
+
+        for transaction in transaction_list:
+            await session.refresh(transaction, ["sender", "receiver", "sender_account", "receiver_account"])
+
+            if not transaction.transaction_metadata:
+                transaction.transaction_metadata = {}
+
+            if transaction.sender_id == user_id:
+                if transaction.receiver:
+                    transaction.transaction_metadata["counterparty_name"] = transaction.receiver.full_name
+                if transaction.receiver_account:
+                    transaction.transaction_metadata["counterparty_account"] = transaction.receiver_account.account_number
+            else:
+                if transaction.sender:
+                    transaction.transaction_metadata["counterparty_name"] = transaction.sender.full_name
+                if transaction.sender_account:
+                    transaction.transaction_metadata["counterparty_account"] = transaction.sender_account.account_number
+
+        return transaction_list, total
+    except HTTPException as http_exc:
+        logger.error(f"Error retrieving transactions: {http_exc.detail}", exc_info=True)
+        raise http_exc
+    except Exception as exc:
+        logger.error(f"Unexpected error retrieving transactions: {exc}", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="An unexpected error occurred while retrieving transactions. Please try again later.",
+        )
+
+async def get_user_statement_data(
+    user_id: uuid.UUID,
+    start_date: datetime,
+    end_date: datetime,
+    session: AsyncSession,
+) -> tuple[dict[str, Any], list[Transaction]]:
+    try:
+        if start_date > end_date:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="start_date cannot be later than end_date.",
+            )
+        user_stmt = select(User).where(User.id == user_id)
+        user_result = await session.exec(user_stmt)
+        user = user_result.first()
+
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="User not found.",
+            )
+
+        user_info = {
+            "username": user.username,
+            "email": user.email,
+            "full_name": user.full_name,
+        }
+
+        txn_stmt = (
+            select(Transaction)
+            .where(
+                or_(
+                    Transaction.sender_id == user_id,
+                    Transaction.receiver_id == user_id,
+                ),
+                Transaction.created_at >= start_date,
+                Transaction.created_at <= end_date,
+            )
+            .order_by(desc(Transaction.created_at))
+        )
+
+        txn_result = await session.exec(txn_stmt)
+        transactions = txn_result.all()
+
+        return user_info, list(transactions)
+
+    except HTTPException as http_exc:
+        logger.error(f"Error retrieving statement data: {http_exc.detail}", exc_info=True)
+        raise http_exc
+    except Exception as exc:
+        logger.error(f"Unexpected error retrieving statement data: {exc}", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="An unexpected error occurred while retrieving statement data. Please try again later.",
+        )
+
+async def prepare_statement_pdf(
+    user_id: uuid.UUID,
+    start_date: datetime,
+    end_date: datetime,
+    session: AsyncSession,
+    account_number: str | None = None,
+) -> dict:
+    try:
+        user_query = select(User).where(User.id == user_id)
+        user_result = await session.exec(user_query)
+        user = user_result.first()
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="User not found.",
+            )
+        if account_number:
+            account_query = select(BankAccount).where(
+                BankAccount.user_id == user_id,
+                BankAccount.account_number == account_number,
+            )
+            account_result = await session.exec(account_query)
+            account = account_result.first()
+            if not account:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail="Bank account not found.",
+                )
+            accounts = [account]
+        else:
+            accounts_query = select(BankAccount).where(BankAccount.user_id == user_id)
+            accounts_result = await session.exec(accounts_query)
+            accounts = accounts_result.all()
+            if not accounts:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail="No bank accounts found for the user.",
+                )
+
+        account_details = []
+
+        for acc in accounts:
+            if acc.account_number:
+                account_details.append(
+                    {
+                        "account_number": acc.account_number,
+                        "account_name": acc.account_name,
+                        "account_type": acc.account_type.value,
+                        "currency": acc.currency.value,
+                        "balance": str(acc.balance),
+                    }
+                )
+
+        account_ids = [acc.id for acc in accounts]
+
+        Transactions_query = (
+            select(Transaction)
+            .where(
+                Transaction.created_at >= start_date,
+                Transaction.created_at <= end_date,
+                Transaction.status == TransactionStatusEnum.Completed,
+                or_(
+                    Transaction.sender_account_id == any_(account_ids),
+                    Transaction.receiver_account_id == any_(account_ids),
+                ),
+            )
+            .order_by(desc(Transaction.created_at))
+        )
+
+        transactions_result = await session.exec(Transactions_query)
+        transactions = transactions_result.all()
+
+        user_data = {
+            "username": user.username,
+            "email": user.email,
+            "full_name": user.full_name,
+            "accounts": account_details,
+        }
+
+        transaction_data = []
+        for txn in transactions:
+            sender_account = (
+                await session.get(BankAccount, txn.sender_account_id)
+                if txn.sender_account_id
+                else None
+            )
+            receiver_account = (
+                await session.get(BankAccount, txn.receiver_account_id)
+                if txn.receiver_account_id
+                else None
+            )
+            transaction_data.append(
+                {
+                    "reference": txn.reference,
+                    "amount": str(txn.amount),
+                    "description": txn.description,
+                    "created_at": txn.created_at.strftime("%Y-%m-%d"),
+                    "transaction_type": txn.transaction_type.value,
+                    "transaction_category": txn.transaction_category.value,
+                    "balance_after": str(txn.balance_after),
+                    "sender_account": sender_account.account_number if sender_account else None,
+                    "receiver_account": receiver_account.account_number if receiver_account else None,
+                    "metadata": txn.transaction_metadata,
+                }
+            )
+        return {
+            "user": user_data,
+            "transactions": transaction_data,
+            "start_date": start_date.strftime("%Y-%m-%d"),
+            "end_date": end_date.strftime("%Y-%m-%d"),
+            "is_single_account": bool(account_number),
+        }
+    except HTTPException as http_exc:
+        logger.error(f"Error preparing statement PDF data: {http_exc.detail}", exc_info=True)
+        raise http_exc
+    except Exception as exc:
+        logger.error(f"Unexpected error preparing statement PDF data: {exc}", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="An unexpected error occurred while preparing statement data. Please try again later.",
+        )
+
+async def generate_user_statement(
+    user_id: uuid.UUID,
+    start_date: datetime,
+    end_date: datetime,
+    session: AsyncSession,
+    account_number: str | None = None,
+)-> dict:
+    try:
+        statement_data = await prepare_statement_pdf(
+            user_id=user_id,
+            start_date=start_date,
+            end_date=end_date,
+            session=session,
+            account_number=account_number,
+        )
+
+        statement_id = str(uuid.uuid4())
+
+        task = generate_statement_pdf.delay(
+            statement_id=statement_id,
+            statement_data=statement_data,
+        )
+
+        return {
+            "status": "pending",
+            "message": "Statement generation in progress.",
+            "statement_id": statement_id,
+            "task_id": task.id,
+        }
+    except ValueError as val_err:
+        logger.error(f"Value error generating user statement: {val_err}", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(val_err),
+        )
+    except Exception as exc:
+        logger.error(f"Unexpected error generating user statement: {exc}", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="An unexpected error occurred while generating the statement. Please try again later.",
         )

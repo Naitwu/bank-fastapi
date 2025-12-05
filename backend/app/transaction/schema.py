@@ -2,6 +2,7 @@ import uuid
 from decimal import Decimal
 from datetime import datetime
 from typing_extensions import Annotated
+from fastapi import Query
 from sqlmodel import SQLModel, Field, Column
 from backend.app.transaction.enums import TransactionTypeEnum, TransactionStatusEnum, TransactionCategoryEnum
 from sqlalchemy.dialects import postgresql as pg
@@ -76,3 +77,83 @@ class WithdrawalRequestSchema(SQLModel):
     amount: Annotated[Decimal, Field(decimal_places=2, ge=0)]
     username: str = Field(max_length=12, min_length=1)
     description: str = Field(max_length=255)
+
+class TransactionHistoryResponseSchema(SQLModel):
+    id: uuid.UUID
+    reference: str
+    amount: Annotated[Decimal, Field(decimal_places=2, ge=0)]
+    description: str
+    transaction_type: TransactionTypeEnum
+    transaction_category: TransactionCategoryEnum
+    transaction_status: TransactionStatusEnum
+    created_at: datetime
+    completed_at: datetime | None = None
+    balance_after: Annotated[Decimal, Field(decimal_places=2, ge=0)]
+    currency: str | None = None
+    converted_amount: str | None = None
+    from_currency: str | None = None
+    to_currency: str | None = None
+    counterparty_account: str | None = None
+    counterparty_name: str | None = None
+
+class PaginatedTransactionHistoryResponseSchema(SQLModel):
+    total: int
+    skip: int
+    limit: int
+    transactions: list[TransactionHistoryResponseSchema]
+
+class TransactionFilterParamsSchema(SQLModel):
+    start_date: datetime | None = Query(
+        default=None,
+        description="Filter transactions from this date (inclusive). Format: YYYY-MM-DDTHH:MM:SSZ",
+        example="2025-01-01T00:00:00Z"
+    )
+    end_date: datetime | None = Query(
+        default=None,
+        description="Filter transactions up to this date (inclusive). Format: YYYY-MM-DDTHH:MM:SSZ",
+        example="2025-12-31T23:59:59Z"
+    )
+    transaction_type: TransactionTypeEnum | None = Query(
+        default=None,
+        description="Filter by transaction type (e.g., Deposit, Withdrawal, Transfer)."
+    )
+    transaction_category: TransactionCategoryEnum | None = Query(
+        default=None,
+        description="Filter by transaction category (e.g., Credit, Debit)."
+    )
+    transaction_status: TransactionStatusEnum | None = Query(
+        default=None,
+        description="Filter by transaction status (e.g., Pending, Completed, Failed)."
+    )
+    min_amount: Decimal | None = Query(
+        default=None,
+        ge=0,
+        description="Filter transactions with amount greater than or equal to this value."
+    )
+    max_amount: Decimal | None = Query(
+        default=None,
+        ge=0,
+        description="Filter transactions with amount less than or equal to this value."
+    )
+
+class StatementRequestSchema(SQLModel):
+    start_date: datetime
+    end_date: datetime
+    account_number: str | None = Field(
+        default=None,
+        max_length=20,
+        description="Optional account number to filter the statement for a specific bank account."
+    )
+
+class StatementResponseSchema(SQLModel):
+    status: str
+    message: str
+    task_id: str | None = None
+    statement_id : str | None = None
+    generated_at: datetime | None = None
+    expires_at: datetime | None = None
+
+class TransactionReviewSchema(SQLModel):
+    if_fraud: bool
+    notes: str | None = None
+    approve_transaction: bool = False
