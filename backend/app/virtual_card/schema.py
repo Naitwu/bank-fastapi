@@ -1,7 +1,6 @@
 from sqlmodel import Field, SQLModel
 from datetime import date, datetime
 from uuid import UUID
-from pydantic import Field
 from backend.app.virtual_card.enums import (
     VirtualCardBrandEnum,
     VirtualCardCurrencyEnum,
@@ -17,6 +16,7 @@ class VirtualCardBaseSchema(SQLModel):
     card_status: VirtualCardStatusEnum = Field(default=VirtualCardStatusEnum.Pending)
     daily_limit: float = Field(ge=0)
     monthly_limit: float = Field(ge=0)
+    name_on_card: str = Field(max_length=100)
     expiry_date: date
     is_active: bool = Field(default=True)
     is_physical_card_requested: bool = Field(default=False)
@@ -71,9 +71,9 @@ class CardTopUpSchema(SQLModel):
 class CardTopUpResponseSchema(SQLModel):
     status: str
     message: str
-    date: dict | None = None
+    data: dict | None = None
 
-class CaardDeleteResponseSchema(SQLModel):
+class CardDeleteResponseSchema(SQLModel):
     status: str
     message: str
     deleted_at: datetime
@@ -81,4 +81,3 @@ class CaardDeleteResponseSchema(SQLModel):
 class CardBlockSchema(SQLModel):
     block_reason: CardBlockReasonEnum
     block_reason_description: str = Field(max_length=255)
-    

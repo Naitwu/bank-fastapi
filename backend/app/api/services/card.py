@@ -212,7 +212,7 @@ async def top_up_virtual_card(
                 detail="Bank account is not active.",
             )
 
-        if Decimal(str(bank_account.account_status)) < Decimal(str(amount)):
+        if Decimal(str(bank_account.balance)) < Decimal(str(amount)):
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Insufficient funds in bank account.",

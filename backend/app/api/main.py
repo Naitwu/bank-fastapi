@@ -25,6 +25,13 @@ from backend.app.api.routes.bank_account import (
     transaction_history as transaction_history_bank_account,
     statement as statement_bank_account,
 )
+from backend.app.api.routes.card import(
+    create as create_card,
+    activate as activate_card,
+    block as block_card,
+    topup as top_up_card,
+    delete as delete_card,
+)
 
 
 api_router = APIRouter()
@@ -52,3 +59,8 @@ api_router.include_router(transfer_bank_account.router)
 api_router.include_router(withdrawal_bank_account.router)
 api_router.include_router(transaction_history_bank_account.router)
 api_router.include_router(statement_bank_account.router)
+api_router.include_router(create_card.router)
+api_router.include_router(activate_card.router)
+api_router.include_router(block_card.router)
+api_router.include_router(top_up_card.router)
+api_router.include_router(delete_card.router)
