@@ -5,9 +5,11 @@ from backend.app.core.config import settings
 from backend.app.core.db import init_db, engine
 from backend.app.core.logging import get_logger
 from backend.app.core.health import health_checker, ServiceStatus
+from backend.app.core.rate_limit.middleware import RateLimitMiddleware
 from contextlib import asynccontextmanager
 import asyncio
 import time
+
 
 logger = get_logger()
 
@@ -88,4 +90,5 @@ async def health_check():
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
         )
 
+app.add_middleware(RateLimitMiddleware)
 app.include_router(api_router, prefix=settings.API_V1_STR)
