@@ -1,0 +1,139 @@
+services:
+  api: &api
+    build:
+      context: .
+      dockerfile: ./backend/docker/production/fastapi/Dockerfile
+    volumes:
+      - api_logs:/src/backend/app/logs
+    expose:
+      - "8000"
+    env_file:
+      - ./.envs/.env.production
+    networks:
+      - bank_prod_nw
+    depends_on:
+      - postgres
+      - redis
+      - rabbitmq
+    command: /start.sh
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.api.rule=Host(`api.willdev.org`)"
+      - "traefik.http.routers.api.entrypoints=websecure"
+      - "traefik.http.routers.api.tls.certresolver=myresolver"
+      - "traefik.http.services.api-service.loadbalancer.healthcheck.path=/health"
+      - "traefik.http.services.api-service.loadbalancer.healthcheck.interval=30s"
+      - "traefik.http.services.api-service.loadbalancer.healthcheck.timeout=5s"
+      - "traefik.http.services.api-service.loadbalancer.server.port=8000"
+
+  traefik:
+    image: docker.io/traefik:v3.2
+    restart: unless-stopped
+    env_file:
+      - ./.envs/.env.production
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - traefik-certificates:/certificates
+      - traefik-logs:/var/log/traefik
+    networks:
+      - bank_prod_nw
+    command:
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      - "--certificatesresolvers.myresolver.acme.tlschallenge=true"
+      - "--certificatesresolvers.myresolver.acme.email=willchung.dev@gmail.com"
+      - "--certificatesresolvers.myresolver.acme.storage=/certificates/acme.json"
+      - "--entrypoints.web.http.redirections.entrypoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
+      - "--accesslog=true"
+      - "--accesslog.filepath=/var/log/traefik/access.log"
+      - "--log.filepath=/var/log/traefik/traefik.log"
+      - "--log.level=INFO"
+      - "--api.dashboard=false"
+
+
+  postgres:
+    build:
+      context: .
+      dockerfile: ./backend/docker/production/postgres/Dockerfile
+    ports:
+      - "5432:5432"
+    volumes:
+      - bank_prod_db:/var/lib/postgresql/data
+    env_file:
+      - ./.envs/.env.production
+    networks:
+      - bank_prod_nw
+  redis:
+    image: docker.io/redis:7.0-alpine
+    command: redis-server --appendonly yes
+    networks:
+      - bank_prod_nw
+  rabbitmq:
+    image: docker.io/rabbitmq:3.13-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - rabbitmq_data_prod:/var/lib/rabbitmq
+    networks:
+      - bank_prod_nw
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.rabbitmq.rule=Host(`rabbitmq.willdev.org`)"
+      - "traefik.http.routers.rabbitmq.entrypoints=websecure"
+      - "traefik.http.routers.rabbitmq.tls.certresolver=myresolver"
+      - "traefik.http.services.rabbitmq.loadbalancer.server.port=15672"
+  celeryworker:
+    <<: *api
+    ports: []
+    command: /start-celeryworker.sh
+
+  flower:
+    <<: *api
+    ports:
+      - "5555:5555"
+    volumes:
+      - bank_flower_data_prod:/data
+    command: /start-flower.sh
+    depends_on:
+      - redis
+      - rabbitmq
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.flower.rule=Host(`flower.willdev.org`)"
+      - "traefik.http.routers.flower.entrypoints=websecure"
+      - "traefik.http.routers.flower.tls.certresolver=myresolver"
+      - "traefik.http.services.flower.loadbalancer.server.port=5555"
+  celerybeat:
+    <<: *api
+    ports: []
+    command: /start-celerybeat.sh
+    depends_on:
+      - redis
+      - rabbitmq
+    networks:
+      - bank_prod_nw
+    volumes:
+      - celerybeat_data:/tmp
+
+networks:
+  bank_prod_nw:
+    external: true
+
+volumes:
+  api_logs:
+  bank_prod_db:
+  rabbitmq_data_prod:
+  bank_flower_data_prod:
+  celerybeat_data:
+  portainer_data_prod:
+  traefik-certificates:
+  traefik-logs:
+
+

@@ -1,13 +1,19 @@
 from celery import Celery
 from backend.app.core.config import settings
 
+redis_url = f"redis://{settings.REDIS_HOST}:{settings.REDIS_PORT}/{settings.REDIS_DB}"
+
+broker_url = f"amqp://{settings.RABBITMQ_USER}:{settings.RABBITMQ_PASSWORD}@{settings.RABBITMQ_HOST}:{settings.RABBITMQ_PORT}//"
+
 celery_app = Celery(
     "worker",
-    broker=f"amqp://{settings.RABBITMQ_USER}:{settings.RABBITMQ_PASSWORD}@{settings.RABBITMQ_HOST}:{settings.RABBITMQ_PORT}//",
-    backend=f"redis://{settings.REDIS_HOST}:{settings.REDIS_PORT}/{settings.REDIS_DB}",
+    broker=broker_url,
+    backend=redis_url,
 )
 
 celery_app.conf.update(
+    broker_url=broker_url,
+    result_backend=redis_url,
     task_serializer="json",
     task_track_started=True,
     result_serializer="json",

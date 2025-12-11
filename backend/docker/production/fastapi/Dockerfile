@@ -1,0 +1,69 @@
+ARG PYTHON_VERSION=3.13.1
+
+FROM python:${PYTHON_VERSION}-slim-bookworm AS python
+
+#Stage 1: build depandency wheels
+FROM python AS python-build-Stage
+
+RUN apt-get update && apt-get install \
+    --no-install-recommends -y \
+    build-essential \
+    libpq-dev
+
+COPY ./backend/requirements.txt .
+
+RUN pip wheel --wheel-dir /usr/src/app/wheels \
+    -r requirements.txt \
+    --no-cache-dir
+
+#Stage 2: Python run stage
+FROM python AS python-run-stage
+
+ARG APP_HOME=/src
+ARG APP_USER=fastapi
+ARG APP_GROUP=fastapi
+ARG USER_UID=1000
+ARG USER_GID=1000
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1
+
+RUN apt-get update && apt-get install \
+    --no-install-recommends -y \
+    sudo git bash-completion nano ssh gettext \
+    && apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN groupadd -g ${USER_GID} ${APP_GROUP} && \
+    useradd -u ${USER_UID} -g ${APP_GROUP} -d ${APP_HOME} -m ${APP_USER}
+
+RUN mkdir -p ${APP_HOME}/backend/app/logs && \
+    mkdir -p ${APP_HOME}/backend/app/celerybeat && \
+    chown -R ${APP_USER}:${APP_GROUP} ${APP_HOME}/backend/app/logs ${APP_HOME}/backend/app/celerybeat && \
+    chmod 775 ${APP_HOME}/backend/app/logs ${APP_HOME}/backend/app/celerybeat
+
+RUN mkdir -p /tmp && \
+    chmod 777 /tmp && \
+    chown -R ${APP_USER}:${APP_GROUP} /tmp
+
+COPY --from=python-build-Stage /usr/src/app/wheels /wheels/
+
+RUN pip install --no-cache-dir --no-index --find-links=/wheels/ /wheels/* \
+    && rm -rf /wheels/
+
+COPY --chown=${APP_USER}:${APP_GROUP} ./backend/docker/production/fastapi/start.sh /start.sh
+COPY --chown=${APP_USER}:${APP_GROUP} ./backend/docker/production/fastapi/entrypoint.sh /entrypoint.sh
+COPY --chown=${APP_USER}:${APP_GROUP} ./backend/docker/production/fastapi/celery/worker/start.sh /start-celeryworker.sh
+COPY --chown=${APP_USER}:${APP_GROUP} ./backend/docker/production/fastapi/celery/beat/start.sh /start-celerybeat.sh
+COPY --chown=${APP_USER}:${APP_GROUP} ./backend/docker/production/fastapi/celery/flower/start.sh /start-flower.sh
+
+RUN sed -i 's/\r$//g' /start.sh /entrypoint.sh /start-celeryworker.sh /start-celerybeat.sh /start-flower.sh && \
+    chmod +x /start.sh /entrypoint.sh /start-celeryworker.sh /start-celerybeat.sh /start-flower.sh
+
+COPY --chown=${APP_USER}:${APP_GROUP} . ${APP_HOME}
+
+WORKDIR ${APP_HOME}
+
+USER ${APP_USER}
+
+ENTRYPOINT ["/entrypoint.sh"]
